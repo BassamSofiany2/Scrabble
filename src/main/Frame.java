@@ -84,14 +84,60 @@ public class Frame
 	// Check if the string of letters exist in the frame.
 	public boolean hasLetters(String letters)
 	{
+		ArrayList<Tile> copyFrame = (ArrayList<Tile>)(tiles.clone());
 		for (int i = 0 ; i < letters.length() ; i++)
 		{
 			Tile tile = new Tile(letters.charAt(i));
-			if (tiles.indexOf(tile) == -1)
+			if (copyFrame.indexOf(tile) == -1)
 			{
 				return false;
 			}
+			copyFrame.remove(tile);
 		}
+		return true;
+	}
+	
+	// Add given tile to frame.
+	public boolean add(Tile tile)
+	{
+		if (tiles.size() == capacity)
+		{
+			return false;
+		}
+		tiles.add(tile);
+		return true;
+	}
+
+	// Add tile using given letter to frame.
+	public boolean add(char letter)
+	{
+		add(new Tile(letter));
+		return true;
+	}
+	
+
+	// Add tiles using given string/letters to frame.
+	public boolean add(String letters)
+	{
+		if ((tiles.size() + letters.length()) > capacity)
+		{
+			return false;
+		}
+		for (int i = 0 ; i < letters.length() ; i++)
+		{
+			add(letters.charAt(i));
+		}
+		return true;
+	}
+	
+	// Add given list tiles to frame.
+	public boolean add(ArrayList<Tile> tiles)
+	{
+		if ((this.tiles.size() + tiles.size()) > capacity)
+		{
+			return false;
+		}
+		this.tiles.addAll(tiles);
 		return true;
 	}
 	

@@ -55,7 +55,7 @@ public class Board
                     System.out.print(tile.getLetter() + "\t");
                 }
             }
-            System.out.println("");
+            System.out.println();
         }
 	}
 	
@@ -97,10 +97,10 @@ public class Board
 				{
 					return ErrorCode.CONFLICTING_WORD;
 				}
+				connected = true; // The word is connected existing words.
 			}
 			else
 			{
-				connected = true; // The letters are connected to the board.
 				lettersUsed += word.charAt(i);
 			}
 			if (location.isHorizontal())

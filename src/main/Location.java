@@ -19,14 +19,29 @@ public class Location
 		return row;
 	}
 	
+	public void setRow(int row)
+	{
+		this.row = row;
+	}
+	
 	public int getColumn()
 	{
 		return column;
 	}
 	
+	public void setColumn(int col)
+	{
+		column = col;
+	}
+	
 	public Direction getDirection()
 	{
 		return direction;
+	}
+	
+	public void setDirection(Direction dir)
+	{
+		direction = dir;
 	}
 	
 	public boolean isVertical()
@@ -37,5 +52,11 @@ public class Location
 	public boolean isHorizontal()
 	{
 		return !isVertical();
+	}
+	
+	public void setRowColumn(int row, int col)
+	{
+		this.row = row;
+		this.column = col;
 	}
 }
