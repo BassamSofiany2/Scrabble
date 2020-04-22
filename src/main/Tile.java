@@ -12,4 +12,10 @@ public class Tile
 	{
 		return letter;
 	}
+	
+	@Override
+	public boolean equals(Object o) // Required for making comparisons.
+	{
+		return (getClass() == o.getClass() && getLetter() == ((Tile)(o)).getLetter());
+	}
 }

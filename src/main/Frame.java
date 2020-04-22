@@ -85,6 +85,6 @@ public class Frame
 	
 	public boolean isEmpty()
 	{
-		return (tiles.size() != 0);
+		return (tiles.size() == 0);
 	}
 }
