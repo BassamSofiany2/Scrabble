@@ -54,10 +54,22 @@ public class Frame
 		return lettersStr;
 	}
 	
+	public Tile getTile(char letter)
+	{
+		return tiles.get(tiles.indexOf(new Tile(letter)));
+	}
+	
 	// Return the actual reference to the tiles (NOT A COPY).
 	public ArrayList<Tile> getTiles()
 	{
 		return tiles;
+	}
+	
+	public Tile popTile(char letter)
+	{
+		Tile tile = getTile(letter);
+		remove(tile);
+		return tile;
 	}
 	
 	// Draw tiles from pool until frame is full.
