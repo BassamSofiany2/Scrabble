@@ -1,9 +1,10 @@
+
 package main;
 
 public class Tile
 {
 	private char letter;
-	public Tile(char letter, int value)
+	public Tile(char letter)
 	{
 		this.letter = letter;
 	}

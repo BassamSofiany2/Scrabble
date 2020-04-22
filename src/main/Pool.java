@@ -34,7 +34,7 @@ public class Pool
 		{
 			for (int j = 0 ; j < tilesCount[i] ; j++)
 			{
-				Tile tile = new Tile((char)(i), tileValues[i]);
+				Tile tile = new Tile((char)(i));
 				pool.add(done, tile);
 				done++;
 			}
