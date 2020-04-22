@@ -87,4 +87,10 @@ public class Frame
 	{
 		return (tiles.size() == 0);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return tiles.toString();
+	}
 }

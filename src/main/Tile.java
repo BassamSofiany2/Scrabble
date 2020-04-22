@@ -18,4 +18,12 @@ public class Tile
 	{
 		return (getClass() == o.getClass() && getLetter() == ((Tile)(o)).getLetter());
 	}
+	
+	@Override
+	public String toString()
+	{
+		char[] temp = {letter};
+		String str = new String(temp);
+		return str;
+	}
 }

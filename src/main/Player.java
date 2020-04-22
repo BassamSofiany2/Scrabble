@@ -45,4 +45,10 @@ public class Player
 	{
 		return frame;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return name;
+	}
 }

@@ -62,4 +62,10 @@ public class Pool
 	{
 		return tileValues[tile.getLetter() - blankChar];
 	}
+	
+	@Override
+	public String toString()
+	{
+		return pool.toString();
+	}
 }
