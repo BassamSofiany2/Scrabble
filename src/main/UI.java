@@ -35,10 +35,16 @@ public class UI extends HBox
 	private Pool pool;
 	private int currentPlayer; // The index of the current player
 	private int scorelessTurns; // The number of turns since someone scored
+	private Dictionary dictionary; // For checking valid words
 	
-	public UI(Board board, Player[] players, Pool pool)
+	private String lastWord;
+	private int lastScore;
+	private int lastPlayer;
+	
+	public UI(Board board, Player[] players, Pool pool, Dictionary dic)
 	{
 		super();
+		dictionary = dic;
 		this.pool = pool;
 		this.players = players;
 		for (Player player : this.players)
@@ -83,6 +89,7 @@ public class UI extends HBox
 		currentPlayer++;
 		currentPlayer %= players.length;
 		player = players[currentPlayer];
+		player.getFrame().refill(pool);
 	}
 	
 	// Setup the I/O GUI
@@ -152,6 +159,8 @@ public class UI extends HBox
 				scorelessTurns++;
 				player.getFrame().exchange(letters, pool);
 				output.appendText(player.getName() + " exchanged their tiles\n");
+				lastScore = 0;
+				lastWord = null;
 				changePlayer();
 			}
 		}
@@ -161,6 +170,8 @@ public class UI extends HBox
 	public void passCommand()
 	{
 		scorelessTurns++;
+		lastScore = 0;
+		lastWord = null;
 		output.appendText(player.getName() + " passed their turn.\n");
 		changePlayer();
 	}
@@ -235,14 +246,31 @@ public class UI extends HBox
 				if (blank)
 				{
 					board.placeWord(frame, location, word, tokens[3]); // Place word with blank.
+					char[] array = new char[word.length()];
+					int index = 0;
+					for (int i = 0 ; i < word.length() ; i++)
+					{
+						if (word.charAt(i) == Pool.blankChar)
+						{
+							array[i] = tokens[3].charAt(index);
+							index++;
+						}
+						else
+						{
+							array[i] = word.charAt(i);
+						}
+					}
+					word = new String(array);
 				}
 				else
 				{
 					board.placeWord(frame, location, word); // Place word with blank.
 				}
+				lastWord = word;
+				lastScore = score;
+				lastPlayer = currentPlayer;
 				grid.update(); // Update the GUI Board
 				player.changeScore(score); // Update the current player score
-				player.getFrame().refill(pool); // Refill the current player frame/rack
 				output.appendText("Word Placed: " + word + "\n");
 				changePlayer();
 			}
@@ -254,6 +282,31 @@ public class UI extends HBox
 		else
 		{
 			System.out.println("Error: Invalid Direction");
+		}
+	}
+	
+	
+	private void challengeCommand()
+	{
+		if (board.isFirstTurn() || lastPlayer == currentPlayer || lastWord == null)
+		{
+			output.appendText("Error: Your Opponent did not make the last move\n");
+		}
+		else if (dictionary.isWord(lastWord))
+		{
+			output.appendText(lastWord + " is a word\n" + player.getName() + " lost the challenge.\nChanging Turn...\n");
+			changePlayer();
+			lastScore = 0;
+			lastWord = null;
+		}
+		else
+		{
+			output.appendText(lastWord + " is not a word\n" + player.getName() + " won the challenge.\nRemoving Word and Score of last move...\n");
+			board.undoLast(players[lastPlayer].getFrame());
+			players[lastPlayer].changeScore(-lastScore);
+			lastScore = 0;
+			lastWord = null;
+			grid.update();
 		}
 	}
 	
@@ -309,6 +362,11 @@ public class UI extends HBox
 				case "SCORE":
 				{
 					scoreCommand();
+					break;
+				}
+				case "CHALLENGE":
+				{
+					challengeCommand();
 					break;
 				}
 				default:

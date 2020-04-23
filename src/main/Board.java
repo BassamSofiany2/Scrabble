@@ -1,6 +1,8 @@
 
 package main;
 
+import java.util.ArrayList;
+
 public class Board
 {
 	private static int rows = 15;
@@ -28,6 +30,9 @@ public class Board
 	private Tile[][] tiles; // Matrix representing the currently placed tiles (or null).
 	private int turns; // The number of words placed
 	
+	private ArrayList<Integer> lastX;
+	private ArrayList<Integer> lastY;
+	
 	public Board()
 	{
 		reset();
@@ -37,6 +42,8 @@ public class Board
 	{
 		tiles = new Tile[rows][columns];
 		turns = 0;
+		lastX = new ArrayList<Integer>();
+		lastY = new ArrayList<Integer>();
 	}
 	
 	// Print the board to console ('-' for empty)
@@ -135,21 +142,19 @@ public class Board
 	}
 	
 	// Place the word from the frame at the location (location also includes direction)
-	public int placeWord(Frame frame, Location location, String word)
+	public void placeWord(Frame frame, Location location, String word)
 	{
 		boolean horizontal = location.isHorizontal();
 		int row = location.getRow();
 		int col = location.getColumn();
-		int score = 0;
-		int wordBonus = 1;
 		for (int i = 0 ; i < word.length() ; i++)
 		{
 			if (tiles[row][col] == null) // No tile at this location
 			{
 				Tile tile = frame.popTile(word.charAt(i));
 				tiles[row][col] = tile;
-				score += squares[row][col].getLetterMultiplier() * tile.getValue();
-				wordBonus *= squares[row][col].getWordMultiplier();
+				lastX.add(row);
+				lastY.add(col);
 			}
 			
 			if (horizontal)
@@ -161,19 +166,15 @@ public class Board
 				row++;
 			}
 		}
-		score *= wordBonus;
 		turns++;
-		return score;
 	}
 	
-	public int placeWord(Frame frame, Location location, String word, String forBlanks)
+	public void placeWord(Frame frame, Location location, String word, String forBlanks)
 	{
 		boolean horizontal = location.isHorizontal();
 		int row = location.getRow();
 		int col = location.getColumn();
 		int blankIndex = 0;
-		int score = 0;
-		int wordBonus = 1;
 		for (int i = 0 ; i < word.length() ; i++)
 		{
 			if (tiles[row][col] == null) // No tile at this location
@@ -183,10 +184,10 @@ public class Board
 				{
 					tile.setLetter(forBlanks.charAt(blankIndex));
 					blankIndex++;
+					lastX.add(row);
+					lastY.add(col);
 				}
 				tiles[row][col] = tile;
-				score += squares[row][col].getLetterMultiplier() * tile.getValue();
-				wordBonus *= squares[row][col].getWordMultiplier();
 			}
 			
 			if (horizontal)
@@ -198,9 +199,7 @@ public class Board
 				row++;
 			}
 		}
-		score *= wordBonus;
 		turns++;
-		return score;
 	}
 	
 	public int getScore(Location location, String word)
@@ -254,5 +253,21 @@ public class Board
 	public Tile at(int row, int col)
 	{
 		return tiles[row][col];
+	}
+	
+	public void undoLast(Frame frame)
+	{
+		for(int i = 0 ; i < lastX.size() ; i++)
+		{
+			Tile tile = tiles[lastX.get(i)][lastY.get(i)];
+			frame.add(tile);
+			tiles[lastX.get(i)][lastY.get(i)] = null;
+		}
+		turns--;
+	}
+	
+	public boolean isFirstTurn()
+	{
+		return (turns == 0);
 	}
 }
