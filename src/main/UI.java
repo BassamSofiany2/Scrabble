@@ -31,7 +31,8 @@ public class UI extends HBox
 	private Player player;
 	private Board board;
 	private Pool pool;
-	private int currentPlayer = 0;
+	private int currentPlayer;
+	private int scorelessTurns;
 	
 	public UI(Board board, Player[] players, Pool pool)
 	{
@@ -39,6 +40,7 @@ public class UI extends HBox
 		this.pool = pool;
 		this.players = players;
 		currentPlayer = 0;
+		scorelessTurns = 0;
 		player = this.players[currentPlayer];
 		this.board = board;
 		setStyle("-fx-box-border: transparent;");
@@ -61,7 +63,7 @@ public class UI extends HBox
 	{
 		String name = player.getName();
 		String frame = player.getFrame().toString().replace(Pool.blankChar, blankChar);
-		output.appendText("\n" + player.getName() + "'s turn.\nAvailable Tiles: " + frame + "\n> ");
+		output.appendText("\n" + name + "'s turn.\nAvailable Tiles: " + frame + "\n> ");
 	}
 	
 	private void changePlayer()
@@ -127,6 +129,7 @@ public class UI extends HBox
 			}
 			else
 			{
+				scorelessTurns++;
 				player.getFrame().exchange(letters, pool);
 				output.appendText(player.getName() + " exchanged their tiles\n");
 				changePlayer();
@@ -136,6 +139,7 @@ public class UI extends HBox
 
 	public void passCommand()
 	{
+		scorelessTurns++;
 		output.appendText(player.getName() + " passed their turn.\n");
 		changePlayer();
 	}
@@ -183,6 +187,7 @@ public class UI extends HBox
 			ErrorCode status = board.isLegal(frame, location, word);
 			if (status == ErrorCode.SUCCESS)
 			{
+				int score = board.getScore(location, word);
 				if (blank)
 				{
 					board.placeWord(frame, location, word, tokens[3]);
@@ -193,6 +198,8 @@ public class UI extends HBox
 				}
 				board.print();
 				grid.update();
+				player.changeScore(score);
+				player.getFrame().refill(pool);
 				output.appendText("Word Placed: " + word + "\n");
 				changePlayer();
 			}

@@ -3,13 +3,12 @@ package test;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import main.*;
 
-public class UITest extends Application{
-
+public class UITest extends Application
+{
 	@Override
 	public void start(Stage primaryStage)
 	{

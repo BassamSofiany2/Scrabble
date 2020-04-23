@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Frame
 {
-	private static int capacity = 7; // The maximum number tiles in the frame
+	public static int capacity = 7; // The maximum number tiles in the frame
 	
 	private ArrayList<Tile> tiles;
 	
@@ -84,7 +84,7 @@ public class Frame
 	// Check if the string of letters exist in the frame.
 	public boolean hasLetters(String letters)
 	{
-		ArrayList<Tile> copyFrame = (ArrayList<Tile>)(tiles.clone());
+		ArrayList<Tile> copyFrame = new ArrayList<Tile>(tiles);
 		for (int i = 0 ; i < letters.length() ; i++)
 		{
 			Tile tile = new Tile(letters.charAt(i));

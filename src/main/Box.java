@@ -5,7 +5,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
 class Box extends StackPane

@@ -135,17 +135,21 @@ public class Board
 	}
 	
 	// Place the word from the frame at the location (location also includes direction)
-	public void placeWord(Frame frame, Location location, String word)
+	public int placeWord(Frame frame, Location location, String word)
 	{
 		boolean horizontal = location.isHorizontal();
 		int row = location.getRow();
 		int col = location.getColumn();
+		int score = 0;
+		int wordBonus = 1;
 		for (int i = 0 ; i < word.length() ; i++)
 		{
 			if (tiles[row][col] == null) // No tile at this location
 			{
 				Tile tile = frame.popTile(word.charAt(i));
 				tiles[row][col] = tile;
+				score += squares[row][col].getLetterMultiplier() * tile.getValue();
+				wordBonus *= squares[row][col].getWordMultiplier();
 			}
 			
 			if (horizontal)
@@ -157,15 +161,19 @@ public class Board
 				row++;
 			}
 		}
+		score *= wordBonus;
 		turns++;
+		return score;
 	}
 	
-	public void placeWord(Frame frame, Location location, String word, String forBlanks)
+	public int placeWord(Frame frame, Location location, String word, String forBlanks)
 	{
 		boolean horizontal = location.isHorizontal();
 		int row = location.getRow();
 		int col = location.getColumn();
 		int blankIndex = 0;
+		int score = 0;
+		int wordBonus = 1;
 		for (int i = 0 ; i < word.length() ; i++)
 		{
 			if (tiles[row][col] == null) // No tile at this location
@@ -177,6 +185,8 @@ public class Board
 					blankIndex++;
 				}
 				tiles[row][col] = tile;
+				score += squares[row][col].getLetterMultiplier() * tile.getValue();
+				wordBonus *= squares[row][col].getWordMultiplier();
 			}
 			
 			if (horizontal)
@@ -188,7 +198,42 @@ public class Board
 				row++;
 			}
 		}
+		score *= wordBonus;
 		turns++;
+		return score;
+	}
+	
+	public int getScore(Location location, String word)
+	{
+		boolean horizontal = location.isHorizontal();
+		int row = location.getRow();
+		int col = location.getColumn();
+		int score = 0;
+		int wordBonus = 1;
+		int used = 0;
+		for (int i = 0 ; i < word.length() ; i++)
+		{
+			score += squares[row][col].getLetterMultiplier() * Pool.getValue(word.charAt(i));
+			wordBonus *= squares[row][col].getWordMultiplier();
+			if (tiles[row][col] == null)
+			{
+				used++;
+			}
+			if (horizontal)
+			{
+				col++;
+			}
+			else
+			{
+				row++;
+			}
+		}
+		score *= wordBonus;
+		if (used == Frame.capacity)
+		{
+			score += 50;
+		}
+		return score;
 	}
 	
 	public int getRows()
