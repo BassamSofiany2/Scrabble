@@ -141,6 +141,17 @@ public class Frame
 		return true;
 	}
 	
+	public void exchange(String letters, Pool pool)
+	{
+		for (int i = 0 ; i < letters.length() ; i++)
+		{
+			char c = letters.charAt(i);
+			Tile tile = popTile(c);
+			pool.addTile(tile);
+		}
+		refill(pool);
+	}
+	
 	public boolean isEmpty()
 	{
 		return (tiles.size() == 0);

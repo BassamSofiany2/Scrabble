@@ -69,6 +69,11 @@ public class Pool
 		return tileValues[letter - blankChar];
 	}
 	
+	public void addTile(Tile tile)
+	{
+		pool.add(tile);
+	}
+	
 	@Override
 	public String toString()
 	{

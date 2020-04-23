@@ -27,13 +27,19 @@ public class UI extends HBox
 	private Grid grid;
 	private ScrollPane gridContainer;
 	
+	private Player[] players;
 	private Player player;
 	private Board board;
+	private Pool pool;
+	private int currentPlayer = 0;
 	
-	public UI(Board board, Player player)
+	public UI(Board board, Player[] players, Pool pool)
 	{
 		super();
-		this.player = player;
+		this.pool = pool;
+		this.players = players;
+		currentPlayer = 0;
+		player = this.players[currentPlayer];
 		this.board = board;
 		setStyle("-fx-box-border: transparent;");
 		setSpacing(20);
@@ -48,6 +54,21 @@ public class UI extends HBox
 		gridContainer.setContent(gridHolder);
 		setupConsole();
 		getChildren().addAll(gridContainer, consolePane);
+		startTurn();
+	}
+	
+	private void startTurn()
+	{
+		String name = player.getName();
+		String frame = player.getFrame().toString().replace(Pool.blankChar, blankChar);
+		output.appendText("\n" + player.getName() + "'s turn.\nAvailable Tiles: " + frame + "\n> ");
+	}
+	
+	private void changePlayer()
+	{
+		currentPlayer++;
+		currentPlayer %= players.length;
+		player = players[currentPlayer];
 	}
 	
 	private void setupConsole()
@@ -89,27 +110,34 @@ public class UI extends HBox
 	}
 	public void exchangeCommand(String[] tokens)
 	{
-//		if (tokens.length < 2)
-//		{
-//			System.out.println("Error: Incomplete Command.");
-//		}
-//		else
-//		{
-//			String letters = tokens[1];
-//			if (this.current_player.frame.exchange(letters, pool))
-//			{
-//				System.out.println("Letters Exchanged from Pool");
-//			}
-//			else
-//			{
-//				System.out.println("Error: Some letters were not found in your rack.");
-//			}
-//		}
+		if (tokens.length < 2)
+		{
+			output.appendText("Error: Tiles to be exchanged were not mentioned.\n");
+		}
+		else
+		{
+			String letters = tokens[1];
+			if (pool.getSize() < letters.length())
+			{
+				output.appendText("Error: Pool doesn't have enough tiles.\n");
+			}
+			else if (!player.getFrame().hasLetters(letters))
+			{
+				output.appendText("Error: Some tiles were not found in your rack.\n");
+			}
+			else
+			{
+				player.getFrame().exchange(letters, pool);
+				output.appendText(player.getName() + " exchanged their tiles\n");
+				changePlayer();
+			}
+		}
 	}
 
 	public void passCommand()
 	{
-//		changePlayer();
+		output.appendText(player.getName() + " passed their turn.\n");
+		changePlayer();
 	}
 
 	public void quitCommand()
@@ -165,7 +193,8 @@ public class UI extends HBox
 				}
 				board.print();
 				grid.update();
-				output.appendText("Word Placed");
+				output.appendText("Word Placed: " + word + "\n");
+				changePlayer();
 			}
 			else
 			{
@@ -177,9 +206,19 @@ public class UI extends HBox
 			System.out.println("Error: Invalid Direction");
 		}
 	}
+	
+	private void scoreCommand()
+	{
+		output.appendText("Scores:\n");
+		for (Player player : players)
+		{
+			output.appendText("\t" + player.getName() + ": " + player.getScore() + "\n");
+		}
+	}
+	
 	private void handleInput(String text)
 	{
-		output.appendText(player.getFrame().toString());
+		output.appendText(text.toUpperCase() + "\n");
 		String[] tokens = text.toUpperCase().split("\\s+");
 		Matcher matcher = refPattern.matcher(tokens[0]);
         boolean matchFound = matcher.matches();
@@ -189,8 +228,7 @@ public class UI extends HBox
 		}
 		else
 		{
-			output.appendText("notref\n");
-			String command = tokens[0].toUpperCase();
+			String command = tokens[0];
 			switch (command)
 			{
 				case "QUIT":
@@ -211,18 +249,19 @@ public class UI extends HBox
 				case "EXCHANGE":
 				{
 					exchangeCommand(tokens);
+					break;
+				}
+				case "SCORE":
+				{
+					scoreCommand();
+					break;
+				}
+				default:
+				{
+					output.appendText("Error: Invalid Command Received.\n");
 				}
 			}
 		}
+		startTurn();
 	}
 }
-
-
-//System.out.print("\n\nIt is your turn ");
-//current_player.displayName();
-//System.out.printf("Your score: %d\n", this.current_player.getScore());
-//System.out.print("Your rack: ");
-//current_player.frame.display();
-//String move = current_move == null ? "" : current_move.word;
-//System.out.printf("Your current move: %s\n>> ", move);
-//String line = scanner.nextLine();
