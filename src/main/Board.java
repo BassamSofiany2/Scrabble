@@ -52,7 +52,7 @@ public class Board
                 }
                 else
                 {
-                    System.out.print(tile.getLetter() + "\t");
+                    System.out.print(tile + "\t");
                 }
             }
             System.out.println();
@@ -145,6 +145,37 @@ public class Board
 			if (tiles[row][col] == null) // No tile at this location
 			{
 				Tile tile = frame.popTile(word.charAt(i));
+				tiles[row][col] = tile;
+			}
+			
+			if (horizontal)
+			{
+				col++;
+			}
+			else
+			{
+				row++;
+			}
+		}
+		turns++;
+	}
+	
+	public void placeWord(Frame frame, Location location, String word, String forBlanks)
+	{
+		boolean horizontal = location.isHorizontal();
+		int row = location.getRow();
+		int col = location.getColumn();
+		int blankIndex = 0;
+		for (int i = 0 ; i < word.length() ; i++)
+		{
+			if (tiles[row][col] == null) // No tile at this location
+			{
+				Tile tile = frame.popTile(word.charAt(i));
+				if (tile.isBlank())
+				{
+					tile.setLetter(forBlanks.charAt(blankIndex));
+					blankIndex++;
+				}
 				tiles[row][col] = tile;
 			}
 			

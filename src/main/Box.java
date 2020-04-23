@@ -5,6 +5,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
 class Box extends StackPane
@@ -17,9 +18,15 @@ class Box extends StackPane
 	private static final Image tripleWordImage = new Image(Box.class.getResource("/resources/tripleword.png").toString(), imageSize, imageSize, false, false);
 	private static final Image tileImage = new Image(Box.class.getResource("/resources/tile.png").toString(), imageSize, imageSize, false, false);
 	
+	private StackPane tilePane;
 	private Box()
 	{
 		super();
+		setMinWidth(imageSize);
+		setMinHeight(imageSize);
+		setMaxWidth(imageSize);
+		setMaxHeight(imageSize);
+		tilePane = new StackPane();
 		setStyle("-fx-background-color: rgb(212,169,117); -fx-border-style: solid; -fx-border-width: 1; -fx-border-color: rgb(220,220,220);");
 	}
 	
@@ -28,12 +35,15 @@ class Box extends StackPane
 		Box box = new Box();
 		box.getChildren().add(image);
 		setAlignment(image, Pos.CENTER);
+		box.getChildren().add(box.tilePane);
 		return box;
 	}
 	
 	public static Box getNormal()
 	{
-		return new Box();
+		Box box = new Box();
+		box.getChildren().add(box.tilePane);
+		return box;
 	}
 	
 	public static Box getDoubleLetter()
@@ -60,22 +70,24 @@ class Box extends StackPane
 	{
 		if (tile == null)
 		{
-			getChildren().clear();
+			tilePane.getChildren().clear();
+			return;
 		}
 		char c = tile.getLetter();
 		Text letter = new Text(Character.toString(c));
 		letter.setStyle("-fx-font-weight: bold");
-		Text value = new Text(Integer.toString(Pool.getValue(tile)));
+		Text value = new Text(Integer.toString(tile.getValue()));
 		ImageView image = new ImageView(tileImage);
-		getChildren().addAll(image, value, letter);
+		tilePane.getChildren().addAll(image, value, letter);
 		setAlignment(image, Pos.CENTER);
 		setAlignment(letter, Pos.CENTER);
 		setAlignment(value, Pos.TOP_LEFT);
 		if (tile.isBlank())
 		{
+			
 			Text blank = new Text(Character.toString(blankChar));
-			getChildren().addAll(blank);
-			setAlignment(image, Pos.TOP_RIGHT);
+			tilePane.getChildren().add(blank);
+			setAlignment(blank, Pos.TOP_RIGHT);
 		}
 	}
 }

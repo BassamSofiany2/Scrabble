@@ -4,9 +4,19 @@ package main;
 public class Tile
 {
 	private char letter;
+	private int value;
 	private boolean blank; // Letter if blank tile
 	public Tile(char letter)
 	{
+		if (letter == Pool.blankChar)
+		{
+			blank = true;
+		}
+		else
+		{
+			blank = false;
+		}
+		this.value = Pool.getValue(letter);
 		this.letter = letter;
 	}
 	
@@ -15,9 +25,19 @@ public class Tile
 		return letter;
 	}
 	
+	public int getValue()
+	{
+		return value;
+	}
+	
 	public void setBlank(boolean flag)
 	{
 		blank = flag;
+	}
+	
+	public void setLetter(char letter)
+	{
+		this.letter = letter;
 	}
 	
 	public boolean isBlank()

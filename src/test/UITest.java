@@ -13,7 +13,10 @@ public class UITest extends Application{
 	@Override
 	public void start(Stage primaryStage)
 	{
-	    UI ui = new UI(new Board());
+		Player p = new Player("TEST");
+		Pool pool = new Pool();
+		p.getFrame().add("@LOR@D");
+	    UI ui = new UI(new Board(), p);
 	    ui.setAlignment(Pos.CENTER);
 	    StackPane container = new StackPane(ui);
 	    Scene scene = new Scene(container);
