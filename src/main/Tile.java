@@ -4,13 +4,25 @@ package main;
 public class Tile
 {
 	private char letter;
+	private boolean blank; // Letter if blank tile
 	public Tile(char letter)
 	{
 		this.letter = letter;
 	}
+	
 	public char getLetter()
 	{
 		return letter;
+	}
+	
+	public void setBlank(boolean flag)
+	{
+		blank = flag;
+	}
+	
+	public boolean isBlank()
+	{
+		return blank;
 	}
 	
 	@Override

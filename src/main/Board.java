@@ -159,4 +159,24 @@ public class Board
 		}
 		turns++;
 	}
+	
+	public int getRows()
+	{
+		return rows;
+	}
+	
+	public int getColumns()
+	{
+		return columns;
+	}
+	
+	public static Square typeAt(int row, int col)
+	{
+		return squares[row][col];
+	}
+	
+	public Tile at(int row, int col)
+	{
+		return tiles[row][col];
+	}
 }
