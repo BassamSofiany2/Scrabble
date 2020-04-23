@@ -65,7 +65,6 @@ public class Pool
 	
 	public static int getValue(char letter)
 	{
-		System.out.print(letter);
 		return tileValues[letter - blankChar];
 	}
 	

@@ -18,39 +18,49 @@ import java.util.regex.Pattern;
 public class UI extends HBox
 {
 	private static String inputPrompt = ">>  ";
+	// A regex pattern representing a valid location for the board.
     private static Pattern refPattern = Pattern.compile("^[A-O](0?[1-9]|1[0-5])$");
     private static char blankChar = '*';
     
-	private TextField input;
-	private TextArea output;
-	private BorderPane consolePane;
-	private Grid grid;
-	private ScrollPane gridContainer;
+    // GUI components
+	private TextField input; // For getting player input.
+	private TextArea output; // For showing the command output.
+	private BorderPane consolePane; // Container for input and output
+	private Grid grid; // The graphical scrabble board
+	private ScrollPane gridContainer; // To allow scrolling
 	
-	private Player[] players;
-	private Player player;
+	private Player[] players; // Array of players
+	private Player player; // The current player
 	private Board board;
 	private Pool pool;
-	private int currentPlayer;
-	private int scorelessTurns;
+	private int currentPlayer; // The index of the current player
+	private int scorelessTurns; // The number of turns since someone scored
 	
 	public UI(Board board, Player[] players, Pool pool)
 	{
 		super();
 		this.pool = pool;
 		this.players = players;
+		for (Player player : this.players)
+		{
+			player.getFrame().refill(this.pool);
+		}
 		currentPlayer = 0;
 		scorelessTurns = 0;
-		player = this.players[currentPlayer];
+		player = this.players[0];
 		this.board = board;
 		setStyle("-fx-box-border: transparent;");
 		setSpacing(20);
 		input = new TextField();
 		output = new TextArea();
+		output.setWrapText(true);
 		grid = new Grid(board);
 		grid.setAlignment(Pos.CENTER);
 		gridContainer = new ScrollPane();
 		StackPane gridHolder = new StackPane(grid);
+		
+		// Bind width of the two layers of containers of grid to make them the same size.
+		// Allowing the grid to be centered wrt the window.
 		gridHolder.minWidthProperty().bind(Bindings.createDoubleBinding(() -> gridContainer.getViewportBounds().getWidth(), gridContainer.viewportBoundsProperty()));
 		gridHolder.minHeightProperty().bind(Bindings.createDoubleBinding(() -> gridContainer.getViewportBounds().getHeight(), gridContainer.viewportBoundsProperty()));
 		gridContainer.setContent(gridHolder);
@@ -59,6 +69,7 @@ public class UI extends HBox
 		startTurn();
 	}
 	
+	// Show the output for the start of a turn
 	private void startTurn()
 	{
 		String name = player.getName();
@@ -66,6 +77,7 @@ public class UI extends HBox
 		output.appendText("\n" + name + "'s turn.\nAvailable Tiles: " + frame + "\n> ");
 	}
 	
+	// Round Robin through the players
 	private void changePlayer()
 	{
 		currentPlayer++;
@@ -73,8 +85,11 @@ public class UI extends HBox
 		player = players[currentPlayer];
 	}
 	
+	// Setup the I/O GUI
 	private void setupConsole()
 	{
+		// A filter on changes made on input
+		// Just to show a permanent prompt (>>).
         UnaryOperator<TextFormatter.Change> filter = change ->
         {
         	if (change.getText() == inputPrompt && change.getCaretPosition() == 0)
@@ -90,7 +105,6 @@ public class UI extends HBox
                 return change;
             }
         };
-        
         input.setTextFormatter(new TextFormatter<String>(filter));
         input.setText(inputPrompt);
         input.positionCaret(inputPrompt.length());
@@ -99,6 +113,10 @@ public class UI extends HBox
         input.setOnAction(event ->
         {
         	String text = input.getText().substring(inputPrompt.length());
+        	if (text.isEmpty())
+        	{
+        		return;
+        	}
         	input.setText(inputPrompt);
             input.positionCaret(inputPrompt.length());
             handleInput(text);
@@ -110,6 +128,8 @@ public class UI extends HBox
         consolePane.setCenter(output);
         consolePane.setBottom(input);
 	}
+	
+	// Handle the EXCHANGE command
 	public void exchangeCommand(String[] tokens)
 	{
 		if (tokens.length < 2)
@@ -119,7 +139,7 @@ public class UI extends HBox
 		else
 		{
 			String letters = tokens[1];
-			if (pool.getSize() < letters.length())
+			if (pool.getSize() < letters.length()) // Pool too small
 			{
 				output.appendText("Error: Pool doesn't have enough tiles.\n");
 			}
@@ -137,6 +157,7 @@ public class UI extends HBox
 		}
 	}
 
+	// Handle the PASS command (change the turn)
 	public void passCommand()
 	{
 		scorelessTurns++;
@@ -144,16 +165,33 @@ public class UI extends HBox
 		changePlayer();
 	}
 
+	// Handle the QUIT command
 	public void quitCommand()
 	{
 		System.exit(0);
 	}
 
+	// Handle the HELP command (display instructions).
 	public void helpCommand()
 	{
-		
+		output.appendText
+		(
+			  "\n\nValid Commands: QUIT, PASS, EXCHANGE, SCORE, POOL\n"
+			+ "\nTo place a word, use this command: <COLUMN><ROW> <DIRECTION> <WORD> [<BLANK LETTERS>]\n"
+			+ "COLUMN are from A to O, ROW from 1 to 15, DIRECTION are D (down) or A (across) and WORD is your choice.\n"
+			+ "Example: H8 D TEST\n"
+			+ "\nBLANK LETTER are required when a blank tile is used\n"
+			+ "To use a blank tile, place '*' where u want the blanks to be in the WORD and follow by their letters\n"
+			+ "Example: B6 A T*S* ET\n"
+			+ "\nQUIT(close game), PASS(pass the turn), SCORE(show scores) and POOL(show number of tiles in pool) are single word commands, i.e. no arguements required\n"
+			+ "\nEXCHANGE can be used to swap some number of the with the pool. After which the turn will be lost\n"
+			+ "EXCHANGE uses this syntax: EXCHANGE <LETTERS>\n"
+			+ "LETTERS are the tiles you want to swap\n"
+			+ "Example: EXCHANGE AC*\n\n"
+		);
 	}
 	
+	// Handle the command to place word on board
 	public void placeCommand(String[] tokens)
 	{
 		if (tokens.length < 3)
@@ -163,7 +201,7 @@ public class UI extends HBox
 		}
 		boolean blank = false;
 		String word = tokens[2];
-		if (word.indexOf(blankChar) != -1)
+		if (word.indexOf(blankChar) != -1) // Check if word includes blanks
 		{
 			if (tokens.length < 4)
 			{
@@ -171,35 +209,40 @@ public class UI extends HBox
 				return;
 			}
 			blank = true;
-			word = word.replace(blankChar, Pool.blankChar);
+			word = word.replace(blankChar, Pool.blankChar); // Replace GUI blanks with Pool blanks.
 		}
 		
+		// Find actual indices from the command
 		String ref = tokens[0];
 		int col = ref.charAt(0) % 'A';
 		int row = Integer.parseInt(ref.substring(1)) - 1;
+		
+		// Extract direction from the command
 		String dir = tokens[1];
-		System.out.println(dir);
-		if (dir.equals("A") || dir.equals("D"))
+		
+		if (dir.equals("A") || dir.equals("D")) // Check for valid direction
 		{
+			// Create a location object for the move
 			Direction direction = dir.equals("A") ? Direction.HORIZONTAL : Direction.VERTICAL;
 			Location location = new Location(row, col, direction);
+			
+			// Check if the move is allowed
 			Frame frame = player.getFrame();
 			ErrorCode status = board.isLegal(frame, location, word);
-			if (status == ErrorCode.SUCCESS)
+			if (status == ErrorCode.SUCCESS) // If it is allowed.
 			{
-				int score = board.getScore(location, word);
+				int score = board.getScore(location, word); // Find the score of the move
 				if (blank)
 				{
-					board.placeWord(frame, location, word, tokens[3]);
+					board.placeWord(frame, location, word, tokens[3]); // Place word with blank.
 				}
 				else
 				{
-					board.placeWord(frame, location, word);
+					board.placeWord(frame, location, word); // Place word with blank.
 				}
-				board.print();
-				grid.update();
-				player.changeScore(score);
-				player.getFrame().refill(pool);
+				grid.update(); // Update the GUI Board
+				player.changeScore(score); // Update the current player score
+				player.getFrame().refill(pool); // Refill the current player frame/rack
 				output.appendText("Word Placed: " + word + "\n");
 				changePlayer();
 			}
@@ -214,6 +257,7 @@ public class UI extends HBox
 		}
 	}
 	
+	// Print the current scores
 	private void scoreCommand()
 	{
 		output.appendText("Scores:\n");
@@ -223,10 +267,13 @@ public class UI extends HBox
 		}
 	}
 	
+	// Decides which command handler needs to be invoked
 	private void handleInput(String text)
 	{
 		output.appendText(text.toUpperCase() + "\n");
-		String[] tokens = text.toUpperCase().split("\\s+");
+		String[] tokens = text.toUpperCase().split("\\s+"); // Split the command at any whitespace
+		
+		// Check if the first token is a valid board location
 		Matcher matcher = refPattern.matcher(tokens[0]);
         boolean matchFound = matcher.matches();
 		if (matchFound)
@@ -235,6 +282,7 @@ public class UI extends HBox
 		}
 		else
 		{
+			// Choose the command if it is not a word placement
 			String command = tokens[0];
 			switch (command)
 			{
@@ -269,6 +317,6 @@ public class UI extends HBox
 				}
 			}
 		}
-		startTurn();
+		startTurn(); // Starting text of the next turn
 	}
 }

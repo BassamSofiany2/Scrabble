@@ -1,13 +1,13 @@
-package test;
+
+package main;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import main.*;
 
-public class UITest extends Application
+public class Scrabble extends Application
 {
 	@Override
 	public void start(Stage primaryStage)
@@ -15,10 +15,9 @@ public class UITest extends Application
 		Player p1 = new Player("Player 1");
 		Player p2 = new Player("Player 2");
 		Pool pool = new Pool();
-		p1.getFrame().refill(pool);
-		p2.getFrame().refill(pool);
+		Board board = new Board();
 		Player[] players = {p1, p2};
-	    UI ui = new UI(new Board(), players, pool);
+	    UI ui = new UI(board, players, pool);
 	    ui.setAlignment(Pos.CENTER);
 	    StackPane container = new StackPane(ui);
 	    Scene scene = new Scene(container);
