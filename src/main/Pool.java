@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Random;
 
+// Class representing all the letter tiles available for the game
 public class Pool
 {
 	public static final char blankChar = '@';
@@ -46,6 +47,7 @@ public class Pool
 		return (pool.size() == 0);
 	}
 	
+	// Draw a random tile from the pool
 	public Tile drawTile()
 	{
 		if (pool.size() == 0)
@@ -57,17 +59,15 @@ public class Pool
 		pool.remove(index);
 		return tile;
 	}
-
-	public static int getValue(Tile tile)
-	{
-		return tileValues[tile.getLetter() - blankChar];
-	}
 	
+	// Get the integer value of a tile (character)
 	public static int getValue(char letter)
 	{
 		return tileValues[letter - blankChar];
 	}
 	
+	// Add a tile to the pool
+	// Primarily used for exchanging tiles
 	public void addTile(Tile tile)
 	{
 		pool.add(tile);

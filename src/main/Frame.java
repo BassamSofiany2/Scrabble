@@ -7,11 +7,11 @@ public class Frame
 {
 	public static int capacity = 7; // The maximum number tiles in the frame
 	
-	private ArrayList<Tile> tiles;
+	private ArrayList<Tile> tiles; // The actual tiles in the frame
 	
 	public Frame()
 	{
-		tiles = new ArrayList<Tile>(capacity);
+		tiles = new ArrayList<Tile>(capacity); // Create empty frame of capacity
 	}
 	
 	// Remove tiles based on a given character/letter.
@@ -54,6 +54,7 @@ public class Frame
 		return lettersStr;
 	}
 	
+	// Return a tile of a given letter from frame or null(if it doesnt exist)
 	public Tile getTile(char letter)
 	{
 		return tiles.get(tiles.indexOf(new Tile(letter)));
@@ -63,13 +64,6 @@ public class Frame
 	public ArrayList<Tile> getTiles()
 	{
 		return tiles;
-	}
-	
-	public Tile popTile(char letter)
-	{
-		Tile tile = getTile(letter);
-		remove(tile);
-		return tile;
 	}
 	
 	// Draw tiles from pool until frame is full.
@@ -97,26 +91,21 @@ public class Frame
 		return true;
 	}
 	
-	// Add given tile to frame.
-	public boolean add(Tile tile)
+	public boolean isEmpty()
 	{
-		if (tiles.size() == capacity)
-		{
-			return false;
-		}
-		tiles.add(tile);
-		return true;
-	}
-
-	// Add tile using given letter to frame.
-	public boolean add(char letter)
-	{
-		add(new Tile(letter));
-		return true;
+		return (tiles.size() == 0);
 	}
 	
-
+	// Return and remove tile from the frame
+	public Tile popTile(char letter)
+	{
+		Tile tile = getTile(letter);
+		remove(tile);
+		return tile;
+	}
+	
 	// Add tiles using given string/letters to frame.
+	// Created for BoardTest
 	public boolean add(String letters)
 	{
 		if ((tiles.size() + letters.length()) > capacity)
@@ -125,22 +114,13 @@ public class Frame
 		}
 		for (int i = 0 ; i < letters.length() ; i++)
 		{
-			add(letters.charAt(i));
+			tiles.add(new Tile(letters.charAt(i)));
 		}
 		return true;
 	}
 	
-	// Add given list tiles to frame.
-	public boolean add(ArrayList<Tile> tiles)
-	{
-		if ((this.tiles.size() + tiles.size()) > capacity)
-		{
-			return false;
-		}
-		this.tiles.addAll(tiles);
-		return true;
-	}
-	
+	// Remove letters from frame and add them to the pool
+	// Then refill frame from pool
 	public void exchange(String letters, Pool pool)
 	{
 		for (int i = 0 ; i < letters.length() ; i++)
@@ -152,9 +132,15 @@ public class Frame
 		refill(pool);
 	}
 	
-	public boolean isEmpty()
+	// Add given tile to frame.
+	public boolean add(Tile tile)
 	{
-		return (tiles.size() == 0);
+		if (tiles.size() == capacity)
+		{
+			return false;
+		}
+		tiles.add(tile);
+		return true;
 	}
 	
 	@Override

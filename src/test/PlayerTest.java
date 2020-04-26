@@ -130,8 +130,8 @@ public class PlayerTest
 		
 		try
 		{
-			int value = Pool.getValue(new Tile('A'));
-			if (value != 3)
+			int value = Pool.getValue('A');
+			if (value != 1)
 			{
 				throw new Exception("Pool getValue() Test Failed");
 			}

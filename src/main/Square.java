@@ -1,6 +1,7 @@
 
 package main;
 
+// An enum of the 5 types of squares in scrabble.
 public enum Square
 {
 	NORMAL(1, 1),

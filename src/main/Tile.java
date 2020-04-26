@@ -20,6 +20,20 @@ public class Tile
 		this.letter = letter;
 	}
 	
+	public Tile(char letter, int value)
+	{
+		if (letter == Pool.blankChar)
+		{
+			blank = true;
+		}
+		else
+		{
+			blank = false;
+		}
+		this.value = value;
+		this.letter = letter;
+	}
+	
 	public char getLetter()
 	{
 		return letter;

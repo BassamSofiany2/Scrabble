@@ -2,6 +2,7 @@
 package main;
 
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
@@ -17,7 +18,7 @@ import java.util.regex.Pattern;
 
 public class UI extends HBox
 {
-	private static String inputPrompt = ">>  ";
+	private static String inputPrompt = ">>  "; // Prompt similar to a shell
 	// A regex pattern representing a valid location for the board.
     private static Pattern refPattern = Pattern.compile("^[A-O](0?[1-9]|1[0-5])$");
     private static char blankChar = '*';
@@ -34,27 +35,29 @@ public class UI extends HBox
 	private Board board;
 	private Pool pool;
 	private int currentPlayer; // The index of the current player
-	private int scorelessTurns; // The number of turns since someone scored
+	
 	private Dictionary dictionary; // For checking valid words
 	
+	// Records of the last play
 	private String lastWord;
 	private int lastScore;
 	private int lastPlayer;
 	
-	public UI(Board board, Player[] players, Pool pool, Dictionary dic)
+	public UI(Board board, Player[] players, Pool pool, Dictionary dictionary)
 	{
 		super();
-		dictionary = dic;
 		this.pool = pool;
+		this.board = board;
+		this.dictionary = dictionary;
 		this.players = players;
 		for (Player player : this.players)
 		{
 			player.getFrame().refill(this.pool);
 		}
 		currentPlayer = 0;
-		scorelessTurns = 0;
 		player = this.players[0];
-		this.board = board;
+		
+		// Setup GUI
 		setStyle("-fx-box-border: transparent;");
 		setSpacing(20);
 		input = new TextField();
@@ -66,7 +69,7 @@ public class UI extends HBox
 		StackPane gridHolder = new StackPane(grid);
 		
 		// Bind width of the two layers of containers of grid to make them the same size.
-		// Allowing the grid to be centered wrt the window.
+		// Allowing the grid to be centered w.r.t. the window.
 		gridHolder.minWidthProperty().bind(Bindings.createDoubleBinding(() -> gridContainer.getViewportBounds().getWidth(), gridContainer.viewportBoundsProperty()));
 		gridHolder.minHeightProperty().bind(Bindings.createDoubleBinding(() -> gridContainer.getViewportBounds().getHeight(), gridContainer.viewportBoundsProperty()));
 		gridContainer.setContent(gridHolder);
@@ -81,6 +84,13 @@ public class UI extends HBox
 		String name = player.getName();
 		String frame = player.getFrame().toString().replace(Pool.blankChar, blankChar);
 		output.appendText("\n" + name + "'s turn.\nAvailable Tiles: " + frame + "\n> ");
+	}
+	
+	// Whenever a move is made (that changes turn) reset the last move
+	private void resetLast()
+	{
+		lastScore = 0;
+		lastWord = null;
 	}
 	
 	// Round Robin through the players
@@ -129,9 +139,10 @@ public class UI extends HBox
             handleInput(text);
         });
         
+        // The I/O window for the game
         output.setEditable(false);
-        
         consolePane = new BorderPane();
+	    consolePane.setPadding(new Insets(30));
         consolePane.setCenter(output);
         consolePane.setBottom(input);
 	}
@@ -146,6 +157,7 @@ public class UI extends HBox
 		else
 		{
 			String letters = tokens[1];
+			letters = letters.replace(blankChar, Pool.blankChar); // Replace with Pool blanks
 			if (pool.getSize() < letters.length()) // Pool too small
 			{
 				output.appendText("Error: Pool doesn't have enough tiles.\n");
@@ -156,12 +168,10 @@ public class UI extends HBox
 			}
 			else
 			{
-				scorelessTurns++;
-				player.getFrame().exchange(letters, pool);
-				output.appendText(player.getName() + " exchanged their tiles\n");
-				lastScore = 0;
-				lastWord = null;
-				changePlayer();
+					player.getFrame().exchange(letters, pool);
+					output.appendText(player.getName() + " exchanged their tiles\n");
+					resetLast();
+					changePlayer();
 			}
 		}
 	}
@@ -169,9 +179,7 @@ public class UI extends HBox
 	// Handle the PASS command (change the turn)
 	public void passCommand()
 	{
-		scorelessTurns++;
-		lastScore = 0;
-		lastWord = null;
+		resetLast();
 		output.appendText(player.getName() + " passed their turn.\n");
 		changePlayer();
 	}
@@ -194,7 +202,7 @@ public class UI extends HBox
 			+ "\nBLANK LETTER are required when a blank tile is used\n"
 			+ "To use a blank tile, place '*' where u want the blanks to be in the WORD and follow by their letters\n"
 			+ "Example: B6 A T*S* ET\n"
-			+ "\nQUIT(close game), PASS(pass the turn), SCORE(show scores) and POOL(show number of tiles in pool) are single word commands, i.e. no arguements required\n"
+			+ "\nQUIT(close game), PASS(pass the turn) and SCORE(show scores) are single word commands, i.e. no arguements required\n"
 			+ "\nEXCHANGE can be used to swap some number of the with the pool. After which the turn will be lost\n"
 			+ "EXCHANGE uses this syntax: EXCHANGE <LETTERS>\n"
 			+ "LETTERS are the tiles you want to swap\n"
@@ -242,7 +250,7 @@ public class UI extends HBox
 			ErrorCode status = board.isLegal(frame, location, word);
 			if (status == ErrorCode.SUCCESS) // If it is allowed.
 			{
-				int score = board.getScore(location, word); // Find the score of the move
+				int score = board.getScore(location, word, dictionary); // Find the score of the move
 				if (blank)
 				{
 					board.placeWord(frame, location, word, tokens[3]); // Place word with blank.
@@ -281,32 +289,7 @@ public class UI extends HBox
 		}
 		else
 		{
-			System.out.println("Error: Invalid Direction");
-		}
-	}
-	
-	
-	private void challengeCommand()
-	{
-		if (board.isFirstTurn() || lastPlayer == currentPlayer || lastWord == null)
-		{
-			output.appendText("Error: Your Opponent did not make the last move\n");
-		}
-		else if (dictionary.isWord(lastWord))
-		{
-			output.appendText(lastWord + " is a word\n" + player.getName() + " lost the challenge.\nChanging Turn...\n");
-			changePlayer();
-			lastScore = 0;
-			lastWord = null;
-		}
-		else
-		{
-			output.appendText(lastWord + " is not a word\n" + player.getName() + " won the challenge.\nRemoving Word and Score of last move...\n");
-			board.undoLast(players[lastPlayer].getFrame());
-			players[lastPlayer].changeScore(-lastScore);
-			lastScore = 0;
-			lastWord = null;
-			grid.update();
+			output.appendText("Error: Invalid Direction\n");
 		}
 	}
 	
@@ -320,6 +303,49 @@ public class UI extends HBox
 		}
 	}
 	
+	private void challengeCommand()
+	{
+		if (board.isFirstTurn() || lastPlayer == currentPlayer || lastWord == null)
+		{
+			output.appendText("Error: Your Opponent did not make the last move\n");
+		}
+		else if (dictionary.isWord(lastWord))
+		{
+			output.appendText(lastWord + " is a word\n" + player.getName() + " lost the challenge.\nChanging Turn...\n");
+			resetLast();
+			changePlayer();
+		}
+		else
+		{
+			output.appendText(lastWord + " is not a word\n" + player.getName() + " won the challenge.\nRemoving Word and Score of last move...\n");
+			board.undoLast(players[lastPlayer].getFrame());
+			players[lastPlayer].changeScore(-lastScore);
+			resetLast();
+			grid.update();
+		}
+	}
+	
+	// Handle the NAME command
+	private void nameCommand(String[] tokens)
+	{
+		if (tokens.length < 2)
+		{
+			output.appendText("Error: New Name not mentioned.\n");
+		}
+		else
+		{
+			StringBuilder builder = new StringBuilder(tokens[1]);
+			for (int i = 2 ; i < tokens.length ; i++)
+			{
+				builder.append(' ');
+				builder.append(tokens[i]);
+			}
+			String name = builder.toString();
+			output.appendText(player.getName() + " has changed their name to " + name + "\n");
+			player.setName(name);
+		}
+	}
+	
 	// Decides which command handler needs to be invoked
 	private void handleInput(String text)
 	{
@@ -329,51 +355,63 @@ public class UI extends HBox
 		// Check if the first token is a valid board location
 		Matcher matcher = refPattern.matcher(tokens[0]);
         boolean matchFound = matcher.matches();
-		if (matchFound)
-		{
-			placeCommand(tokens);
-		}
-		else
-		{
-			// Choose the command if it is not a word placement
-			String command = tokens[0];
-			switch (command)
+        try
+        {
+			if (matchFound)
 			{
-				case "QUIT":
+				placeCommand(tokens);
+			}
+			else
+			{
+				// Choose the command if it is not a word placement
+				String command = tokens[0];
+				switch (command)
 				{
-					quitCommand();
-					break;
-				}
-				case "PASS":
-				{
-					passCommand();
-					break;
-				}
-				case "HELP":
-				{
-					helpCommand();
-					break;
-				}
-				case "EXCHANGE":
-				{
-					exchangeCommand(tokens);
-					break;
-				}
-				case "SCORE":
-				{
-					scoreCommand();
-					break;
-				}
-				case "CHALLENGE":
-				{
-					challengeCommand();
-					break;
-				}
-				default:
-				{
-					output.appendText("Error: Invalid Command Received.\n");
+					case "QUIT":
+					{
+						quitCommand();
+						break;
+					}
+					case "PASS":
+					{
+						passCommand();
+						break;
+					}
+					case "HELP":
+					{
+						helpCommand();
+						break;
+					}
+					case "EXCHANGE":
+					{
+						exchangeCommand(tokens);
+						break;
+					}
+					case "SCORE":
+					{
+						scoreCommand();
+						break;
+					}
+					case "CHALLENGE":
+					{
+						challengeCommand();
+						break;
+					}
+					case "NAME":
+					{
+						nameCommand(tokens);
+						break;
+					}
+					default:
+					{
+						output.appendText("Error: Invalid Command Received.\n");
+					}
 				}
 			}
+        }
+		catch (Exception e)
+		{
+			output.appendText("Error: Unrecongnized characters were used.\n");
 		}
 		startTurn(); // Starting text of the next turn
 	}
